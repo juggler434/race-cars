@@ -9,12 +9,12 @@ import (
 )
 
 // CarRepository handles database operations for cars
-type CarRepository struct {
+type GameRepository struct {
 	db *sql.DB
 }
 
-// NewCarRepository creates a new car repository
-func NewCarRepository() *CarRepository {
+// NewGameRepository creates a new game repository
+func GameRepository() *CarRepository {
 	return &CarRepository{
 		db: config.DB,
 	}
