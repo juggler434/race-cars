@@ -1,7 +1,5 @@
 package models
 
-type Icon string
-
 type Card interface {
 	GetName() string
 	GetSpeed() int
@@ -12,12 +10,12 @@ type Card interface {
 }
 
 type card struct {
-	name string
-	speed int
-	icons map[Icon]int
+	name        string
+	speed       int
+	icons       map[Icon]int
 	discardable bool
-	playable bool
-	basic bool
+	playable    bool
+	basic       bool
 }
 
 // NewCard creates a new card instance
@@ -61,5 +59,3 @@ func (c *card) IsPlayable() bool {
 func (c *card) IsBasic() bool {
 	return c.basic
 }
-
-
