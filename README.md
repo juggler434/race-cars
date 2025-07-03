@@ -10,6 +10,9 @@ A RESTful API for managing race cars built with Go and Gorilla Mux.
 - **Middleware Support**: CORS, logging, and error recovery
 - **Environment Configuration**: Flexible configuration management
 - **JSON API**: Standard JSON request/response format
+- **Card Game Engine**: Complete card game models with full unit test coverage
+- **Interface-Based Design**: Clean interfaces for all game components
+- **Comprehensive Testing**: Full unit test coverage for all models
 
 ## Project Structure
 
@@ -22,7 +25,15 @@ race-cars/
 │   ├── config/             # Configuration management
 │   │   └── config.go
 │   ├── models/             # Data models
-│   │   └── car.go
+│   │   ├── card.go         # Card model and interface
+│   │   ├── card_test.go    # Card unit tests
+│   │   ├── deck.go         # Deck model and interface
+│   │   ├── deck_test.go    # Deck unit tests
+│   │   ├── discardPile.go  # Discard pile model and interface
+│   │   ├── discardPile_test.go # Discard pile unit tests
+│   │   ├── hand.go         # Hand model and interface
+│   │   ├── hand_test.go    # Hand unit tests
+│   │   └── icon.go         # Icon constants and types
 │   ├── repository/         # Database operations
 │   │   └── car_repository.go
 │   ├── handlers/           # HTTP request handlers
@@ -187,11 +198,72 @@ GET /api/cars
 | `PORT` | Server port | `8080` |
 | `LOG_LEVEL` | Logging level | `info` |
 
+## Card Game Models
+
+This project includes a comprehensive card game engine with the following models:
+
+### Card
+- Represents a single card with properties like name, speed, icons, and flags
+- Supports discardable, playable, and basic card types
+- Includes icon system for card effects (Boost, Cooling, etc.)
+
+### Deck
+- Collection of cards that can be drawn from and shuffled
+- Supports adding cards to the top
+- Handles empty deck scenarios gracefully
+
+### Hand
+- Player's collection of cards
+- Supports drawing from deck and discarding to discard pile
+- Validates card operations (discardable cards, valid indices)
+
+### Discard Pile
+- Temporary storage for discarded cards
+- Can reset cards back to deck with shuffling
+- Handles nil cards and empty piles gracefully
+
+### Icon System
+- Defines card effect types (Boost, Cooling, etc.)
+- Extensible for new icon types
+- Supports string conversion for display
+
+### Testing
+All card game models include comprehensive unit tests:
+```bash
+# Run all model tests
+go test ./internal/models
+
+# Run specific model tests
+go test ./internal/models -v -run TestCard
+go test ./internal/models -v -run TestDeck
+go test ./internal/models -v -run TestDiscardPile
+go test ./internal/models -v -run TestHand
+
+# Run benchmarks
+go test ./internal/models -bench=.
+```
+
 ## Development
 
 ### Running Tests
 ```bash
+# Run all tests (API and card game models)
 go test ./...
+
+# Run API tests only
+go test ./internal/handlers ./internal/repository ./internal/middleware
+
+# Run card game model tests
+go test ./internal/models
+
+# Run specific model tests
+go test ./internal/models -v -run TestCard
+go test ./internal/models -v -run TestDeck
+go test ./internal/models -v -run TestDiscardPile
+go test ./internal/models -v -run TestHand
+
+# Run benchmarks
+go test ./internal/models -bench=.
 ```
 
 ### Building
