@@ -33,17 +33,16 @@ race-cars/
 │   │   ├── discardPile_test.go # Discard pile unit tests
 │   │   ├── hand.go         # Hand model and interface
 │   │   ├── hand_test.go    # Hand unit tests
-│   │   └── icon.go         # Icon constants and types
-│   ├── repository/         # Database operations
-│   │   └── car_repository.go
-│   ├── handlers/           # HTTP request handlers
-│   │   └── car_handler.go
-│   ├── middleware/         # HTTP middleware
-│   │   └── middleware.go
-│   └── routes/             # Route definitions
-│       └── routes.go
-└── migrations/             # Database migrations
-    └── 001_create_cars_table.sql
+│   │   ├── icon.go         # Icon constants and types
+│   │   ├── icon_test.go    # Icon unit tests
+│   └── repository/         # Database operations
+│       └── car_repository.go
+├── handlers/           # HTTP request handlers
+│   └── car_handler.go
+├── middleware/         # HTTP middleware
+│   └── middleware.go
+└── routes/             # Route definitions
+    └── routes.go
 ```
 
 ## Prerequisites
