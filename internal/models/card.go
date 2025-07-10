@@ -30,6 +30,11 @@ func NewCard(name string, speed int, icons map[Icon]int, discardable, playable, 
 	}
 }
 
+// NewHeatCard creates a new generic heat card instance
+func NewHeatCard() Card {
+	return NewCard("Heat", 0, nil, false, false, false)
+}
+
 // GetName returns the card's name
 func (c *card) GetName() string {
 	return c.name
