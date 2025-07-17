@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"testing"
 )
 
@@ -97,7 +96,7 @@ func TestIconTypeConversion(t *testing.T) {
 			}
 
 			// Test fmt.Sprintf conversion
-			formatted := fmt.Sprintf("%s", tt.icon)
+			formatted := tt.icon.String()
 			if formatted != tt.expected {
 				t.Errorf("fmt.Sprintf(\"%%s\", %s) = %s, expected %s", tt.name, formatted, tt.expected)
 			}

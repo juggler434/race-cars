@@ -321,8 +321,8 @@ func TestDeck_ConsecutiveOperations(t *testing.T) {
 		drawnCards = append(drawnCards, card.GetName())
 	}
 
-	// Should have 4 cards left (original 5 - 1 drawn + 1 added)
-	if len(drawnCards) != 4 {
+	// Should have 5 cards left (original 5 - 1 drawn + 1 added)
+	if len(drawnCards) != 5 {
 		t.Errorf("Expected 4 cards after operations, got %d", len(drawnCards))
 	}
 
@@ -379,12 +379,11 @@ func BenchmarkNewDeck(b *testing.B) {
 
 func BenchmarkDeck_DrawCard(b *testing.B) {
 	cards := createTestCards()
-	deck := NewDeck(cards)
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
 		// Reset deck for each iteration
-		deck = NewDeck(cards)
+		deck := NewDeck(cards)
 		for deck.DrawCard() != nil {
 			// Draw all cards
 		}

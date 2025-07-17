@@ -30,7 +30,7 @@ func NewCard(name string, speed int, icons map[Icon]int, discardable, playable, 
 	}
 }
 
-// NewHeatCard creates a new generic heat card instance
+// NewHeatCard creates a new heat card instance
 func NewHeatCard() Card {
 	return NewCard("Heat", 0, nil, false, false, false)
 }
@@ -47,7 +47,11 @@ func (c *card) GetSpeed() int {
 
 // GetIcons returns all icons on the card
 func (c *card) GetIcons() map[Icon]int {
-	return c.icons
+	icons := make(map[Icon]int)
+	for icon, count := range c.icons {
+		icons[icon] = count
+	}
+	return icons
 }
 
 // IsDiscardable returns whether the card can be discarded
