@@ -5,6 +5,18 @@ import (
 	"math"
 )
 
+type Color string
+
+const (
+	Red    Color = "Red"
+	Blue   Color = "Blue"
+	Green  Color = "Green"
+	Yellow Color = "Yellow"
+	Orange Color = "Orange"
+	Black  Color = "Black"
+	Gray   Color = "Gray"
+)
+
 type Car interface {
 	GetColor() string
 	GetSpeed() int
