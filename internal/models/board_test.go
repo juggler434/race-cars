@@ -7,15 +7,11 @@ import (
 )
 
 func TestNewBoard(t *testing.T) {
-	finishLine := NewSpace(nil, nil, 0, true)
 	spaces := []Space{NewSpace(nil, nil, 1, false), NewSpace(nil, nil, 2, false)}
-	board := NewBoard(spaces, finishLine, 3)
+	board := NewBoard(spaces, 3)
 
 	if !reflect.DeepEqual(board.GetSpaces(), spaces) {
 		t.Errorf("GetSpaces() = %v, want %v", board.GetSpaces(), spaces)
-	}
-	if board.GetFinishLine() != finishLine {
-		t.Errorf("GetFinishLine() = %v, want %v", board.GetFinishLine(), finishLine)
 	}
 	if len(board.GetRacerTurnOrder()) != 0 {
 		t.Errorf("Initial racerTurnOrder = %v, want empty", board.GetRacerTurnOrder())
@@ -35,8 +31,7 @@ func TestBoard_SetRacerTurnOrder_And_GetNextRacer(t *testing.T) {
 	space2.AddCar(car2)
 	space1.AddCar(car3)
 	spaces := []Space{space1, space2}
-	finishLine := NewSpace(nil, nil, 0, true)
-	board := NewBoard(spaces, finishLine, 3)
+	board := NewBoard(spaces, 3)
 
 	board.SetRacerTurnOrder()
 	order := board.GetRacerTurnOrder()
@@ -64,7 +59,7 @@ func TestBoard_SetRacerTurnOrder_And_GetNextRacer(t *testing.T) {
 
 func TestBoard_EdgeCases(t *testing.T) {
 	t.Run("Empty board", func(t *testing.T) {
-		board := NewBoard([]Space{}, NewSpace(nil, nil, 0, true), 3)
+		board := NewBoard([]Space{}, 3)
 		board.SetRacerTurnOrder()
 		if len(board.GetRacerTurnOrder()) != 0 {
 			t.Error("Turn order should be empty for empty board")
@@ -73,7 +68,7 @@ func TestBoard_EdgeCases(t *testing.T) {
 
 	t.Run("No cars in spaces", func(t *testing.T) {
 		spaces := []Space{NewSpace(nil, nil, 1, false), NewSpace(nil, nil, 2, false)}
-		board := NewBoard(spaces, NewSpace(nil, nil, 0, true), 3)
+		board := NewBoard(spaces, 3)
 		board.SetRacerTurnOrder()
 		if len(board.GetRacerTurnOrder()) != 0 {
 			t.Error("Turn order should be empty when no cars are on the board")
@@ -81,7 +76,7 @@ func TestBoard_EdgeCases(t *testing.T) {
 	})
 
 	t.Run("GetNextRacer panics on empty turn order", func(t *testing.T) {
-		board := NewBoard([]Space{}, NewSpace(nil, nil, 0, true), 3)
+		board := NewBoard([]Space{}, 3)
 		defer func() {
 			if r := recover(); r == nil {
 				t.Error("GetNextRacer() should panic when turn order is empty")
@@ -92,10 +87,9 @@ func TestBoard_EdgeCases(t *testing.T) {
 }
 
 func TestBoard_InterfaceCompliance(t *testing.T) {
-	board := NewBoard([]Space{}, NewSpace(nil, nil, 0, true), 3)
+	board := NewBoard([]Space{}, 3)
 	var _ Board = board
 	_ = board.GetSpaces()
-	_ = board.GetFinishLine()
 	_ = board.GetRacerTurnOrder()
 	board.SetRacerTurnOrder()
 }
@@ -129,8 +123,7 @@ func TestBoard_SetRacerTurnOrder_CoversInsertRacerInTurnOrder(t *testing.T) {
 	space4.AddCar(car5) // lap 0 - same space as yellow car
 
 	spaces := []Space{space1, space2, space3, space4}
-	finishLine := NewSpace(nil, nil, 0, true)
-	board := NewBoard(spaces, finishLine, 3)
+	board := NewBoard(spaces, 3)
 
 	board.SetRacerTurnOrder()
 
@@ -151,7 +144,6 @@ func TestBoard_SetRacerTurnOrder_CoversInsertRacerInTurnOrder(t *testing.T) {
 }
 
 func BenchmarkNewBoard(b *testing.B) {
-	finishLine := NewSpace(nil, nil, 0, true)
 	spaces := make([]Space, 10) // Reasonable number of spaces for a race track
 	for i := 0; i < 10; i++ {
 		spaces[i] = NewSpace(nil, nil, i+1, false)
@@ -159,7 +151,7 @@ func BenchmarkNewBoard(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		NewBoard(spaces, finishLine, 3)
+		NewBoard(spaces, 3)
 	}
 }
 
@@ -172,8 +164,7 @@ func BenchmarkSetRacerTurnOrder_SmallBoard(b *testing.B) {
 	space1.AddCar(car1)
 	space2.AddCar(car2)
 	spaces := []Space{space1, space2}
-	finishLine := NewSpace(nil, nil, 0, true)
-	board := NewBoard(spaces, finishLine, 3)
+	board := NewBoard(spaces, 3)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -196,8 +187,7 @@ func BenchmarkSetRacerTurnOrder_MediumBoard(b *testing.B) {
 			spaces[i].AddCar(car)
 		}
 	}
-	finishLine := NewSpace(nil, nil, 0, true)
-	board := NewBoard(spaces, finishLine, 3)
+	board := NewBoard(spaces, 3)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -220,8 +210,7 @@ func BenchmarkSetRacerTurnOrder_MaxCars(b *testing.B) {
 			spaces[i].AddCar(car)
 		}
 	}
-	finishLine := NewSpace(nil, nil, 0, true)
-	board := NewBoard(spaces, finishLine, 3)
+	board := NewBoard(spaces, 3)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -240,8 +229,7 @@ func BenchmarkGetNextRacer(b *testing.B) {
 	space2.AddCar(car2)
 	space1.AddCar(car3)
 	spaces := []Space{space1, space2}
-	finishLine := NewSpace(nil, nil, 0, true)
-	board := NewBoard(spaces, finishLine, 3)
+	board := NewBoard(spaces, 3)
 	board.SetRacerTurnOrder()
 
 	b.ResetTimer()
@@ -269,11 +257,10 @@ func BenchmarkBoardOperations_Complete(b *testing.B) {
 			spaces[i].AddCar(car)
 		}
 	}
-	finishLine := NewSpace(nil, nil, 0, true)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		board := NewBoard(spaces, finishLine, 3)
+		board := NewBoard(spaces, 3)
 		board.SetRacerTurnOrder()
 
 		// Process all racers (max 8 cars)

@@ -1,15 +1,11 @@
 package models
 
-// Board represents a racing board with spaces, finish line, and turn management
+// Board represents a racing board with spaces and turn management
 // The board manages the physical layout of the race track and the turn order of racers
 type Board interface {
 	// GetSpaces returns all spaces on the board
 	// Returns: slice of all spaces that make up the race track
 	GetSpaces() []Space
-
-	// GetFinishLine returns the finish line space
-	// Returns: the space that represents the finish line
-	GetFinishLine() Space
 
 	// GetRacerTurnOrder returns the current turn order of racers
 	// Returns: slice of cars in turn order (first car is next to go)
@@ -26,7 +22,6 @@ type Board interface {
 
 type board struct {
 	spaces         []Space
-	finishLine     Space
 	racerTurnOrder []Car
 	numberOfLaps   int
 }
@@ -34,14 +29,12 @@ type board struct {
 // NewBoard creates a new board instance
 // Input: spaces - slice of spaces that make up the board
 //
-//	finishLine - the finish line space
 //	numberOfLaps - the number of laps required to win the race
 //
 // Returns: a new Board
-func NewBoard(spaces []Space, finishLine Space, numberOfLaps int) Board {
+func NewBoard(spaces []Space, numberOfLaps int) Board {
 	return &board{
 		spaces:         spaces,
-		finishLine:     finishLine,
 		racerTurnOrder: make([]Car, 0),
 		numberOfLaps:   numberOfLaps,
 	}
@@ -52,13 +45,6 @@ func NewBoard(spaces []Space, finishLine Space, numberOfLaps int) Board {
 // Returns: slice of all spaces on the board
 func (b *board) GetSpaces() []Space {
 	return b.spaces
-}
-
-// GetFinishLine returns the finish line space
-// Input: none
-// Returns: the finish line space
-func (b *board) GetFinishLine() Space {
-	return b.finishLine
 }
 
 // GetRacerTurnOrder returns the current turn order of racers
