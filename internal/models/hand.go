@@ -4,9 +4,10 @@ import "errors"
 
 // Hand is a collection of cards that a player can draw from and discard to the discard pile
 type Hand interface {
-	AddCards(card []Card)
+	AddCards(cards []Card)
 	DrawCard(deck Deck)
 	DiscardCard(index int, discardPile DiscardPile) error
+	PlayCard(index int) (Card, error)
 }
 
 type hand struct {
@@ -71,4 +72,26 @@ func (h *hand) DiscardCard(index int, discardPile DiscardPile) error {
 	discardPile.AddCard(h.cards[index])
 	h.cards = append(h.cards[:index], h.cards[index+1:]...)
 	return nil
+}
+
+// PlayCard plays a card from the hand
+// Input: index - an int, the index of the card to play
+// Returns: Card at the position of index, anerror if the card is not playable or the index is out of bounds
+func (h *hand) PlayCard(index int) (Card, error) {
+	if index < 0 || index >= len(h.cards) {
+		return nil, errors.New("invalid card index")
+	}
+
+	if h.cards[index] == nil {
+		return nil, errors.New("card is nil")
+	}
+
+	if !h.cards[index].IsPlayable() {
+		return nil, errors.New("card is not playable")
+	}
+
+	card := h.cards[index]
+
+	h.cards = append(h.cards[:index], h.cards[index+1:]...)
+	return card, nil
 }

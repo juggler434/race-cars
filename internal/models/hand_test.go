@@ -463,6 +463,289 @@ func TestHand_EdgeCases(t *testing.T) {
 	})
 }
 
+func TestHand_PlayCard(t *testing.T) {
+	tests := []struct {
+		name              string
+		handCards         []Card
+		playIndex         int
+		expectedCard      Card
+		expectedError     string
+		expectedRemaining int
+	}{
+		{
+			name:              "Play valid playable card",
+			handCards:         []Card{NewCard("Playable", 1, map[Icon]int{}, true, true, false)},
+			playIndex:         0,
+			expectedCard:      NewCard("Playable", 1, map[Icon]int{}, true, true, false),
+			expectedError:     "",
+			expectedRemaining: 0,
+		},
+		{
+			name:              "Play non-playable card",
+			handCards:         []Card{NewCard("Non-playable", 1, map[Icon]int{}, true, false, false)},
+			playIndex:         0,
+			expectedCard:      nil,
+			expectedError:     "card is not playable",
+			expectedRemaining: 1,
+		},
+		{
+			name:              "Play with negative index",
+			handCards:         []Card{NewCard("Test", 1, map[Icon]int{}, true, true, false)},
+			playIndex:         -1,
+			expectedCard:      nil,
+			expectedError:     "invalid card index",
+			expectedRemaining: 1,
+		},
+		{
+			name:              "Play with index out of bounds",
+			handCards:         []Card{NewCard("Test", 1, map[Icon]int{}, true, true, false)},
+			playIndex:         1,
+			expectedCard:      nil,
+			expectedError:     "invalid card index",
+			expectedRemaining: 1,
+		},
+		{
+			name:              "Play from empty hand",
+			handCards:         []Card{},
+			playIndex:         0,
+			expectedCard:      nil,
+			expectedError:     "invalid card index",
+			expectedRemaining: 0,
+		},
+		{
+			name: "Play middle card from multiple cards",
+			handCards: []Card{
+				NewCard("First", 1, map[Icon]int{}, true, true, false),
+				NewCard("Second", 2, map[Icon]int{}, true, true, false),
+				NewCard("Third", 3, map[Icon]int{}, true, true, false),
+			},
+			playIndex:         1,
+			expectedCard:      NewCard("Second", 2, map[Icon]int{}, true, true, false),
+			expectedError:     "",
+			expectedRemaining: 2,
+		},
+		{
+			name:              "Play nil card",
+			handCards:         []Card{nil},
+			playIndex:         0,
+			expectedCard:      nil,
+			expectedError:     "card is nil",
+			expectedRemaining: 1,
+		},
+		{
+			name: "Play card with complex icons",
+			handCards: []Card{
+				NewCard("Complex", 3, map[Icon]int{IconBoost: 2, IconCooling: 1}, true, true, false),
+			},
+			playIndex:         0,
+			expectedCard:      NewCard("Complex", 3, map[Icon]int{IconBoost: 2, IconCooling: 1}, true, true, false),
+			expectedError:     "",
+			expectedRemaining: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHand()
+
+			// Add cards to hand
+			h.AddCards(tt.handCards)
+
+			// Try to play the card
+			card, err := h.PlayCard(tt.playIndex)
+
+			// Check error
+			if tt.expectedError == "" {
+				if err != nil {
+					t.Errorf("PlayCard() returned unexpected error: %v", err)
+				}
+			} else {
+				if err == nil {
+					t.Errorf("PlayCard() expected error '%s', got nil", tt.expectedError)
+				} else if err.Error() != tt.expectedError {
+					t.Errorf("PlayCard() expected error '%s', got '%s'", tt.expectedError, err.Error())
+				}
+			}
+
+			// Check returned card
+			if tt.expectedCard == nil {
+				if card != nil {
+					t.Errorf("PlayCard() returned card %v, expected nil", card)
+				}
+			} else {
+				if card == nil {
+					t.Errorf("PlayCard() returned nil card, expected %v", tt.expectedCard)
+				} else if card.GetName() != tt.expectedCard.GetName() {
+					t.Errorf("PlayCard() returned card with name '%s', expected '%s'", card.GetName(), tt.expectedCard.GetName())
+				} else if card.GetSpeed() != tt.expectedCard.GetSpeed() {
+					t.Errorf("PlayCard() returned card with speed %d, expected %d", card.GetSpeed(), tt.expectedCard.GetSpeed())
+				}
+			}
+
+			// Check remaining cards in hand
+			hh := h.(*hand)
+			if len(hh.cards) != tt.expectedRemaining {
+				t.Errorf("PlayCard() left %d cards in hand, expected %d", len(hh.cards), tt.expectedRemaining)
+			}
+		})
+	}
+}
+
+func TestHand_PlayCard_ConsecutiveOperations(t *testing.T) {
+	h := NewHand()
+	testCards := []Card{
+		NewCard("First", 1, map[Icon]int{}, true, true, false),
+		NewCard("Second", 2, map[Icon]int{}, true, true, false),
+		NewCard("Third", 3, map[Icon]int{}, true, true, false),
+	}
+	h.AddCards(testCards)
+
+	// Play first card
+	card, err := h.PlayCard(0)
+	if err != nil {
+		t.Errorf("Failed to play first card: %v", err)
+	}
+	if card.GetName() != "First" {
+		t.Errorf("Expected to play 'First' card, got '%s'", card.GetName())
+	}
+
+	// Play second card (now at index 0)
+	card, err = h.PlayCard(0)
+	if err != nil {
+		t.Errorf("Failed to play second card: %v", err)
+	}
+	if card.GetName() != "Second" {
+		t.Errorf("Expected to play 'Second' card, got '%s'", card.GetName())
+	}
+
+	// Play third card (now at index 0)
+	card, err = h.PlayCard(0)
+	if err != nil {
+		t.Errorf("Failed to play third card: %v", err)
+	}
+	if card.GetName() != "Third" {
+		t.Errorf("Expected to play 'Third' card, got '%s'", card.GetName())
+	}
+
+	// Hand should be empty now
+	card, err = h.PlayCard(0)
+	if err == nil {
+		t.Error("Hand should be empty after playing all cards")
+	}
+	if card != nil {
+		t.Error("PlayCard should return nil card when hand is empty")
+	}
+}
+
+func TestHand_PlayCard_EdgeCases(t *testing.T) {
+	t.Run("Play card from hand with mixed playable/non-playable cards", func(t *testing.T) {
+		h := NewHand()
+		mixedCards := []Card{
+			NewCard("Playable1", 1, map[Icon]int{}, true, true, false),
+			NewCard("Non-playable", 2, map[Icon]int{}, true, false, false),
+			NewCard("Playable2", 3, map[Icon]int{}, true, true, false),
+		}
+		h.AddCards(mixedCards)
+
+		// Play first card (should succeed)
+		card, err := h.PlayCard(0)
+		if err != nil {
+			t.Errorf("Failed to play first card: %v", err)
+		}
+		if card.GetName() != "Playable1" {
+			t.Errorf("Expected to play 'Playable1' card, got '%s'", card.GetName())
+		}
+
+		// Try to play second card (should fail - non-playable)
+		card, err = h.PlayCard(0)
+		if err == nil {
+			t.Error("Expected error when playing non-playable card")
+		}
+		if err.Error() != "card is not playable" {
+			t.Errorf("Expected error 'card is not playable', got '%s'", err.Error())
+		}
+
+		// Play third card (should succeed)
+		card, err = h.PlayCard(1)
+		if err != nil {
+			t.Errorf("Failed to play third card: %v", err)
+		}
+		if card.GetName() != "Playable2" {
+			t.Errorf("Expected to play 'Playable2' card, got '%s'", card.GetName())
+		}
+	})
+
+	t.Run("Play card with nil cards in hand", func(t *testing.T) {
+		h := NewHand()
+		nilCards := []Card{nil, NewCard("Valid", 1, map[Icon]int{}, true, true, false), nil}
+		h.AddCards(nilCards)
+
+		// Try to play first card (nil)
+		card, err := h.PlayCard(0)
+		if err == nil {
+			t.Error("Expected error when playing nil card")
+		}
+		if err.Error() != "card is nil" {
+			t.Errorf("Expected error 'card is nil', got '%s'", err.Error())
+		}
+
+		// Play second card (valid)
+		card, err = h.PlayCard(1)
+		if err != nil {
+			t.Errorf("Failed to play valid card: %v", err)
+		}
+		if card.GetName() != "Valid" {
+			t.Errorf("Expected to play 'Valid' card, got '%s'", card.GetName())
+		}
+
+		// Try to play third card (nil)
+		card, err = h.PlayCard(1)
+		if err == nil {
+			t.Error("Expected error when playing nil card")
+		}
+		if err.Error() != "card is nil" {
+			t.Errorf("Expected error 'card is nil', got '%s'", err.Error())
+		}
+	})
+
+	t.Run("Play card preserves card properties", func(t *testing.T) {
+		h := NewHand()
+		complexCard := NewCard("Complex", 5, map[Icon]int{IconBoost: 3, IconCooling: 2}, true, true, true)
+		h.AddCards([]Card{complexCard})
+
+		card, err := h.PlayCard(0)
+		if err != nil {
+			t.Errorf("Failed to play complex card: %v", err)
+		}
+
+		// Verify all properties are preserved
+		if card.GetName() != "Complex" {
+			t.Errorf("Card name not preserved: got '%s', expected 'Complex'", card.GetName())
+		}
+		if card.GetSpeed() != 5 {
+			t.Errorf("Card speed not preserved: got %d, expected 5", card.GetSpeed())
+		}
+		if !card.IsPlayable() {
+			t.Error("Card playable property not preserved")
+		}
+		if !card.IsDiscardable() {
+			t.Error("Card discardable property not preserved")
+		}
+		if !card.IsBasic() {
+			t.Error("Card basic property not preserved")
+		}
+
+		// Verify icons are preserved
+		icons := card.GetIcons()
+		if icons[IconBoost] != 3 {
+			t.Errorf("Boost icon not preserved: got %d, expected 3", icons[IconBoost])
+		}
+		if icons[IconCooling] != 2 {
+			t.Errorf("Cooling icon not preserved: got %d, expected 2", icons[IconCooling])
+		}
+	})
+}
+
 // Benchmark tests
 func BenchmarkNewHand(b *testing.B) {
 	for i := 0; i < b.N; i++ {
