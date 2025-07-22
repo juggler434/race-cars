@@ -1,5 +1,10 @@
 package models
 
+const (
+	Stress string = "Stress"
+	Heat   string = "Heat"
+)
+
 type Card interface {
 	GetName() string
 	GetSpeed() int
@@ -32,7 +37,12 @@ func NewCard(name string, speed int, icons map[Icon]int, discardable, playable, 
 
 // NewHeatCard creates a new heat card instance
 func NewHeatCard() Card {
-	return NewCard("Heat", 0, nil, false, false, false)
+	return NewCard(Heat, 0, nil, false, false, false)
+}
+
+// NewStressCard creates a new stress card instance
+func NewStressCard() Card {
+	return NewCard(Stress, 0, nil, false, true, false)
 }
 
 // GetName returns the card's name
