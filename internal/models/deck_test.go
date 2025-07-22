@@ -369,6 +369,166 @@ func TestDeck_EdgeCases(t *testing.T) {
 	}
 }
 
+func TestDeck_IsEmpty(t *testing.T) {
+	tests := []struct {
+		name     string
+		cards    []Card
+		expected bool
+	}{
+		{
+			name:     "Empty deck",
+			cards:    []Card{},
+			expected: true,
+		},
+		{
+			name:     "Nil cards",
+			cards:    nil,
+			expected: true,
+		},
+		{
+			name:     "Single card",
+			cards:    []Card{NewCard("Test", 1, map[Icon]int{}, true, true, false)},
+			expected: false,
+		},
+		{
+			name:     "Multiple cards",
+			cards:    createTestCards(),
+			expected: false,
+		},
+		{
+			name:     "Large deck",
+			cards:    make([]Card, 100),
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			deck := NewDeck(tt.cards)
+
+			if deck.IsEmpty() != tt.expected {
+				t.Errorf("IsEmpty() = %v, want %v", deck.IsEmpty(), tt.expected)
+			}
+		})
+	}
+}
+
+func TestDeck_IsEmpty_AfterOperations(t *testing.T) {
+	t.Run("IsEmpty after drawing all cards", func(t *testing.T) {
+		cards := createTestCards()
+		deck := NewDeck(cards)
+
+		// Initially not empty
+		if deck.IsEmpty() {
+			t.Error("Deck should not be empty initially")
+		}
+
+		// Draw all cards
+		for deck.DrawCard() != nil {
+			// Continue drawing
+		}
+
+		// Should be empty after drawing all cards
+		if !deck.IsEmpty() {
+			t.Error("Deck should be empty after drawing all cards")
+		}
+	})
+
+	t.Run("IsEmpty after adding cards to empty deck", func(t *testing.T) {
+		deck := NewDeck([]Card{})
+
+		// Initially empty
+		if !deck.IsEmpty() {
+			t.Error("Deck should be empty initially")
+		}
+
+		// Add cards
+		newCards := []Card{NewCard("Test", 1, map[Icon]int{}, true, true, false)}
+		deck.AddCardsToTop(newCards)
+
+		// Should not be empty after adding cards
+		if deck.IsEmpty() {
+			t.Error("Deck should not be empty after adding cards")
+		}
+	})
+
+	t.Run("IsEmpty after shuffle", func(t *testing.T) {
+		cards := createTestCards()
+		deck := NewDeck(cards)
+
+		// Initially not empty
+		if deck.IsEmpty() {
+			t.Error("Deck should not be empty initially")
+		}
+
+		// Shuffle
+		deck.Shuffle()
+
+		// Should still not be empty after shuffle
+		if deck.IsEmpty() {
+			t.Error("Deck should not be empty after shuffle")
+		}
+	})
+
+	t.Run("IsEmpty after partial draw", func(t *testing.T) {
+		cards := createTestCards()
+		deck := NewDeck(cards)
+
+		// Initially not empty
+		if deck.IsEmpty() {
+			t.Error("Deck should not be empty initially")
+		}
+
+		// Draw some cards
+		deck.DrawCard()
+		deck.DrawCard()
+
+		// Should still not be empty after partial draw
+		if deck.IsEmpty() {
+			t.Error("Deck should not be empty after partial draw")
+		}
+	})
+}
+
+func TestDeck_IsEmpty_EdgeCases(t *testing.T) {
+	t.Run("IsEmpty with nil cards", func(t *testing.T) {
+		deck := NewDeck(nil)
+
+		if !deck.IsEmpty() {
+			t.Error("Deck with nil cards should be empty")
+		}
+	})
+
+	t.Run("IsEmpty with empty slice", func(t *testing.T) {
+		deck := NewDeck([]Card{})
+
+		if !deck.IsEmpty() {
+			t.Error("Deck with empty slice should be empty")
+		}
+	})
+
+	t.Run("IsEmpty with single nil card", func(t *testing.T) {
+		deck := NewDeck([]Card{nil})
+
+		if deck.IsEmpty() {
+			t.Error("Deck with single nil card should not be empty")
+		}
+	})
+
+	t.Run("IsEmpty with mixed nil and valid cards", func(t *testing.T) {
+		cards := []Card{
+			nil,
+			NewCard("Valid", 1, map[Icon]int{}, true, true, false),
+			nil,
+		}
+		deck := NewDeck(cards)
+
+		if deck.IsEmpty() {
+			t.Error("Deck with mixed nil and valid cards should not be empty")
+		}
+	})
+}
+
 // Benchmark tests
 func BenchmarkNewDeck(b *testing.B) {
 	cards := createTestCards()
@@ -408,5 +568,36 @@ func BenchmarkDeck_AddCardsToTop(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		deck.AddCardsToTop(newCards)
+	}
+}
+
+func BenchmarkDeck_IsEmpty(b *testing.B) {
+	tests := []struct {
+		name  string
+		cards []Card
+	}{
+		{
+			name:  "Empty deck",
+			cards: []Card{},
+		},
+		{
+			name:  "Single card",
+			cards: []Card{NewCard("Test", 1, map[Icon]int{}, true, true, false)},
+		},
+		{
+			name:  "Multiple cards",
+			cards: createTestCards(),
+		},
+	}
+
+	for _, tt := range tests {
+		b.Run(tt.name, func(b *testing.B) {
+			deck := NewDeck(tt.cards)
+			b.ResetTimer()
+
+			for i := 0; i < b.N; i++ {
+				deck.IsEmpty()
+			}
+		})
 	}
 }

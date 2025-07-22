@@ -7,6 +7,7 @@ type Deck interface {
 	DrawCard() Card
 	Shuffle()
 	AddCardsToTop(cards []Card)
+	IsEmpty() bool
 }
 
 // deck is an implementation of the Deck interface
@@ -50,4 +51,11 @@ func (d *deck) Shuffle() {
 // Returns: none
 func (d *deck) AddCardsToTop(cards []Card) {
 	d.cards = append(cards, d.cards...)
+}
+
+// IsEmpty checks if the deck is empty
+// Input: none
+// Returns: a boolean
+func (d *deck) IsEmpty() bool {
+	return len(d.cards) == 0
 }
